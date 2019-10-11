@@ -56,7 +56,7 @@ class MoveSchema:
     def __init__(self):
         pass
 
-    def execute(self, *args, **kwargs):
+    def execute_move(self, *args, **kwargs):
         params = kwargs.get('params')
         if params is None:
             raise Exception('Params not defined')
@@ -65,10 +65,20 @@ class MoveSchema:
         conn = utils.get_connection(params)
         try:
             with conn:
-                kwargs['tables'] = self._get_all_tables(conn, *args, **kwargs)
-                self._move_tables(conn, *args, **kwargs)
+                self._set_up(conn, *args, **kwargs)
+                try:
+                    kwargs['tables'] = self._get_all_tables(conn, *args, **kwargs)
+                    self._move_tables(conn, *args, **kwargs)
+                finally:
+                    self._tear_down(conn, *args, **kwargs)
         finally:
             conn.close()
+
+    def _set_up(self, connection, *args, **kwargs):
+        pass
+
+    def _tear_down(self, connection, *args, **kwargs):
+        pass
 
     def _build_sql_to_move_table(self, schema_from, table_name, schema_to):
         sql = "alter table {schema_from}.{table} set schema {schema_to};".format(
