@@ -9,7 +9,7 @@ class DatabaseUtils:
 
     def get_connection(self, params):
         """
-        OPen a connection to Postgres database.
+        Open a connection to Postgres database.
         :param params: a dict with connection parameters: host, user, password, schema and database
         :return: the opened connection
         """
@@ -48,15 +48,12 @@ class DatabaseUtils:
         cursor.execute(sql_command)
 
 
-class MoveSchema:
+class MoveTable:
     """
     Move all objects from a Postgres schema to another.
     """
 
-    def __init__(self):
-        pass
-
-    def execute_move(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         params = kwargs.get('params')
         if params is None:
             raise Exception('Params not defined')
@@ -113,3 +110,14 @@ class MoveSchema:
                 tables = utils.select(connection, sql)
                 result[schema] = [table['tablename'] for table in tables]
         return result
+
+
+class InsertRows(MoveTable):
+    def _build_sql_to_move_table(self, schema_from, table_name, schema_to):
+        sql = "insert into {schema_from}.{table} select * from {schema_to}.{table};".format(
+            schema_from=schema_from,
+            table=table_name,
+            schema_to=schema_to,
+        )
+        return sql
+
