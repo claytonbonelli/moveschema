@@ -94,6 +94,10 @@ class MoveTable:
                     kwargs['tables'] = self._get_all_tables(conn, *args, **kwargs)
                     Utils.print_message("Moving table")
                     self._move_tables(conn, *args, **kwargs)
+                    exclude_schemas_from = kwargs['params'].get('exclude_schemas_from') or False
+                    if exclude_schemas_from:
+                        Utils.print_message("Removing schemas")
+                        self._exclude_schemas(conn, *args, **kwargs)
                 finally:
                     self.tear_down(conn, *args, **kwargs)
         finally:
@@ -106,6 +110,21 @@ class MoveTable:
         print("------")
         print("--- %s DURATION ---" % duration)
         print("------")
+
+    def _build_sql_to_remove_schema(self, schema):
+        sql = "drop schema if exists {schema} cascade;".format(
+            schema=schema,
+        )
+        return sql
+
+    def _exclude_schemas(self, connection, *args, **kwargs):
+        utils = kwargs['utils']
+        schemas = kwargs['params']['schemas_from']
+        for schema in schemas:
+            Utils.print_message("...removing" + schema)
+            sql = self._build_sql_to_remove_schema(schema)
+            if sql is not None:
+                utils.execute(connection, sql)
 
     def _build_sql_to_enable_trigger(self, table_name, action, restrict):
         sql = "alter table if exists {table_name} {action} trigger {restrict};".format(
