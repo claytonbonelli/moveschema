@@ -121,7 +121,7 @@ class MoveTable:
         utils = kwargs['utils']
         schemas = kwargs['params']['schemas_from']
         for schema in schemas:
-            Utils.print_message("...removing" + schema)
+            Utils.print_message("...removing " + schema)
             sql = self._build_sql_to_remove_schema(schema)
             if sql is not None:
                 utils.execute(connection, sql)
