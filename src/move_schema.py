@@ -94,10 +94,10 @@ class MoveTable:
                     kwargs['tables'] = self._get_all_tables(conn, *args, **kwargs)
                     Utils.print_message("Moving table")
                     self._move_tables(conn, *args, **kwargs)
-                    exclude_schemas_from = kwargs['params'].get('exclude_schemas_from') or False
-                    if exclude_schemas_from:
-                        Utils.print_message("Removing schemas")
-                        self._exclude_schemas(conn, *args, **kwargs)
+                    drop_schemas = kwargs['params'].get('drop_schemas') or False
+                    if drop_schemas:
+                        Utils.print_message("Dropping schemas")
+                        self._drop_schemas(conn, *args, **kwargs)
                 finally:
                     self.tear_down(conn, *args, **kwargs)
         finally:
@@ -117,7 +117,7 @@ class MoveTable:
         )
         return sql
 
-    def _exclude_schemas(self, connection, *args, **kwargs):
+    def _drop_schemas(self, connection, *args, **kwargs):
         utils = kwargs['utils']
         schemas = kwargs['params']['schemas_from']
         for schema in schemas:
